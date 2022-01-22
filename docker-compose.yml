@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-dev
+    image: api_example_frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/src
+
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=api_example
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend-dev
+    image: api_example_backend
+    ports:
+      - "8000:80"
+    environment:
+      - DB_PASS=api_example
+    depends_on:
+      - db
+    links:
+      - db:postgres
+    volumes:
+      - ./app:/app/app
+      - ./migrations:/app/migrations
+
+  proxy:
+    image: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+      - frontend
+    links:
+      - api
+      - frontend
+    volumes:
+      - ./proxy.conf:/etc/nginx/conf.d/default.conf

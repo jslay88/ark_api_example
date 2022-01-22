@@ -1,0 +1,14 @@
+version: "3.4"
+
+services:
+  frontend:
+    profiles:
+      - donotstart
+  proxy:
+    profiles:
+      - donotstart
+  api:
+    build:
+      target: backend-prod
+    ports:
+      - "80:80"
