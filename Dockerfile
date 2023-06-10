@@ -1,8 +1,8 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9 as backend-base
-FROM node:lts as frontend-base
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11 AS backend-base
+FROM node:18 AS frontend-base
 
 # Backend
-FROM backend-base as backend-dev
+FROM backend-base AS backend-dev
 WORKDIR /app
 
 ENV DB_HOST=postgres
@@ -30,18 +30,18 @@ EXPOSE 80
 ENTRYPOINT ["/start-reload.sh"]
 
 # Frontend
-FROM frontend-base as frontend-dev
+FROM frontend-base AS frontend-dev
 WORKDIR /src
 COPY frontend/ /src
 RUN npm install
-ENTRYPOINT ["npm", "run", "serve"]
+ENTRYPOINT ["bash", "-c", "npm install && npm run serve"]
 
 # Frontend Build
-FROM frontend-dev as frontend-build
+FROM frontend-dev AS frontend-build
 RUN npm run build
 
 # Combined Prod
-FROM backend-dev as backend-prod
+FROM backend-dev AS backend-prod
 COPY --from=frontend-build /src/dist /app/static
 
 RUN chown -Rf www-data:www-data /app
